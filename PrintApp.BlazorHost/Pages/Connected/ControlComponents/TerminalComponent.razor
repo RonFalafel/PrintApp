@@ -1,0 +1,58 @@
+﻿@using PrintApp.Logic
+@inject PrintersManager PrintersManager
+
+<div class="terminal">
+    <h2>Terminal</h2>
+    <ul class="command-history" id="scroller">
+        @foreach (string command in PrintersManager.CurrentPrinter.CommandHistory.ToList())
+        {
+            <li>
+                @command
+            </li>
+        }
+        <li id="anchor" style="list-style-type: none"></li>
+    </ul>
+    <div class="submit-text">
+        <input type="text" @bind="@_command" style="width: 100%" />
+        <input type="submit" @onclick="@SendCommand" />
+    </div>
+</div>
+
+@code {
+    private string _command = "";
+
+    protected override void OnInitialized()
+    {
+        PrintersManager.CurrentPrinter.PreDispatchCommandEvent = (string command) =>
+        {
+            InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+        };
+
+        PrintersManager.CurrentPrinter.PostReadEvent = (string command) =>
+        {
+            InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+        };
+
+        PrintersManager.PrinterStateHasChanged += UpdateTerminal;
+    }
+
+    private void UpdateTerminal(object sender, EventArgs e)
+    {
+        InvokeAsync(() => { StateHasChanged(); });
+    }
+
+    private void SendCommand()
+    {
+        if (!string.IsNullOrWhiteSpace(_command))
+        {
+            PrintersManager.CurrentPrinter.WriteGCodeCommand(_command);
+            _command = "";
+        }
+    }
+}

@@ -1,0 +1,37 @@
+﻿@using PrintApp.Logic
+@inject PrintersManager PrintersManager
+
+<div class="start-print">
+    <h2>Start Print</h2>
+    <select class="queue-files" size="99999" @bind="@selectedFile">
+        @foreach (string fileName in PrintersManager.CurrentQueue.GetQueueFiles())
+        {
+            <option>
+                @fileName
+            </option>
+        }
+    </select>
+
+    <input type="submit" @onclick="@DispatchPrint" value="Start Print" />
+
+    <label style="color:red">@error</label>
+</div>
+
+@code  {
+    private string selectedFile;
+
+    private string error;
+
+    private void DispatchPrint()
+    {
+        if (string.IsNullOrWhiteSpace(selectedFile))
+        {
+            error = "No file selected!";
+        }
+        else
+        {
+            PrintersManager.CurrentPrinter.StartPrint($"{PrintersManager.CurrentQueue.QueueDirectory}//{selectedFile}");
+            error = string.Empty;
+        }
+    }
+}

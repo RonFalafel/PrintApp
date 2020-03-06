@@ -1,9 +1,15 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace PrintApp.Logic
 {
     public interface IPrintQueue
     {
+        string QueueDirectory { get; set; }
+
+        string PrintedDirectory { get; set; }
+
         bool IsEmpty();
 
         string GetNextFile();
@@ -12,6 +18,8 @@ namespace PrintApp.Logic
 
         string GetAfterPrintedPath(string filePath);
 
-        void PostFile(Stream fileStream, string fileName);
+        IEnumerable<string> GetQueueFiles();
+
+        Task AddFile(Stream httpFileStream, string fileName);
     }
 }

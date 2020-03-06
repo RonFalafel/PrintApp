@@ -1,0 +1,58 @@
+﻿@page "/connect"
+@using PrintApp.Logic
+@using WebApp.Core
+@inject PrintersManager PrintersManager
+@inject NavigationManager NavigationManager
+
+<h3>Please enter your printer's USB port and baudrate.</h3>
+
+<EditForm Model="@_connectionSettings" OnValidSubmit="HandleValidSubmit">
+    <p>
+        <InputText id="name" @bind-Value="_connectionSettings.PrinterName" />
+    </p>
+
+    <p>
+        <InputText id="usb" @bind-Value="_connectionSettings.UsbPort" />
+    </p>
+
+    <p>
+        <InputNumber id="baud" @bind-Value="_connectionSettings.Baudrate" />
+    </p>
+
+    <input type="submit" disabled="@_disableSubmit" />
+</EditForm>
+
+<label style="color:red">@error</label>
+
+
+@code {
+    [Parameter]
+    public EventCallback<string> RenderNavbar { get; set; }
+
+    private bool _disableSubmit { get; set; } = false;
+
+    private PrinterConnectionSettings _connectionSettings = new PrinterConnectionSettings
+    {
+        PrinterName = "3d Printer Name",
+        UsbPort = "COM1",
+        Baudrate = 115200
+    };
+
+    private string error;
+
+    private void HandleValidSubmit()
+    {
+        _disableSubmit = true;
+        if (!PrintersManager.TryAddPrinter(_connectionSettings))
+        {
+            error = "Could not connect to 3d printer.";
+            _disableSubmit = false;
+
+        }
+        else
+        {
+            _disableSubmit = false;
+            NavigationManager.NavigateTo("Control");
+        }
+    }
+}

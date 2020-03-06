@@ -1,5 +1,20 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">PrintApp.BlazorHost</a>
+﻿@using PrintApp.Logic
+@inject PrintersManager PrintersManager
+
+<div class="top-row pl-4 navbar navbar-dark">
+    @if (PrintersManager.Printers.Count == 0)
+    {
+        <a class="navbar-brand" href="">PrintApp</a>
+    }
+    else
+    {
+        <select @bind="@PrintersManager.CurrentPrinterName" class="select-printer">
+            @foreach (string printerName in PrintersManager.Printers.Keys)
+            {
+                <option selected="@IsSelected(printerName)">@printerName</option>
+            }
+        </select>
+    }
     <button class="navbar-toggler" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -7,21 +22,43 @@
 
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
     <ul class="nav flex-column">
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
-            </NavLink>
-        </li>
+        @if (PrintersManager.Printers.Count == 0)
+        {
+
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <span class="oi oi-home" aria-hidden="true"></span> Home
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="connect">
+                    <span class="oi oi-plus" aria-hidden="true"></span> Connect 3d Printer
+                </NavLink>
+            </li>
+        }
+        else
+        {
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="control">
+                    <span class="oi oi-terminal" aria-hidden="true"></span> Control
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="queue">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Queue
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="statistics">
+                    <span class="oi oi-pie-chart" aria-hidden="true"></span> Statistics
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="connect">
+                    <span class="oi oi-plus" aria-hidden="true"></span> Connect 3d Printers
+                </NavLink>
+            </li>
+        }
     </ul>
 </div>
 
@@ -30,8 +67,23 @@
 
     string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
+    protected override void OnInitialized()
+    {
+        PrintersManager.PrinterStateHasChanged += RenderNavbar;
+    }
+
     void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    private async void RenderNavbar(object sender, EventArgs e)
+    {
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private bool IsSelected(string printerName)
+    {
+        return PrintersManager.CurrentPrinterName == printerName;
     }
 }

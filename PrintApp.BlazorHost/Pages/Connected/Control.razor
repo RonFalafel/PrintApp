@@ -1,0 +1,59 @@
+﻿@page "/Control"
+@using PrintApp.Logic
+@using PrintApp.BlazorHost.Pages.Connected.ControlComponents
+@inject PrintersManager  PrintersManager
+
+<h1>Control Page</h1>
+
+<h5>Set temps, move axes, GCode terminal, starting / pausing / stopping prints and more!</h5>
+
+<input type="submit" @onclick="@DisableSteppers" value="Disable Steppers" disabled="@PrintersManager.CurrentPrinter.IsPrinting" />
+
+<input type="submit" @onclick="@AutoHome" value="Auto Home" disabled="@PrintersManager.CurrentPrinter.IsPrinting" />
+
+<input type="submit" @onclick="@PreheatNozzle" value="Preheat Nozzle" disabled="@PrintersManager.CurrentPrinter.IsPrinting" />
+
+<input type="submit" @onclick="@PreheatBed" value="Preheat Bed" disabled="@PrintersManager.CurrentPrinter.IsPrinting" />
+
+<input type="range" @bind="@fanSpeed" min="0" max="255" step="1" disabled="@PrintersManager.CurrentPrinter.IsPrinting" />
+
+<input type="submit" @onclick="@UpdateFanSpeed" value="Update Fan Speed" disabled="@PrintersManager.CurrentPrinter.IsPrinting" />
+
+<div class="inner-controls">
+    <TerminalComponent />
+    <StartPrint />
+</div>
+
+@code {
+    private int fanSpeed = 0;
+
+    private void DisableSteppers()
+    {
+        if (!PrintersManager.CurrentPrinter.IsPrinting)
+            PrintersManager.CurrentPrinter.WriteGCodeCommand("M18");
+    }
+
+    private void AutoHome()
+    {
+        if (!PrintersManager.CurrentPrinter.IsPrinting)
+            PrintersManager.CurrentPrinter.WriteGCodeCommand("G28");
+    }
+
+    private void PreheatNozzle()
+    {
+        if (!PrintersManager.CurrentPrinter.IsPrinting)
+            PrintersManager.CurrentPrinter.WriteGCodeCommand("M104 S210");
+    }
+
+    private void PreheatBed()
+    {
+        if (!PrintersManager.CurrentPrinter.IsPrinting)
+            PrintersManager.CurrentPrinter.WriteGCodeCommand("M140 S60");
+    }
+
+    private void UpdateFanSpeed()
+    {
+        if (!PrintersManager.CurrentPrinter.IsPrinting)
+            PrintersManager.CurrentPrinter.WriteGCodeCommand($"M106 S{fanSpeed}");
+    }
+}

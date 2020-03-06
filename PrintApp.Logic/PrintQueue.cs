@@ -1,29 +1,29 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace PrintApp.Logic
 {
     public class PrintQueue : IPrintQueue
     {
-        private string _filesDirectory;
-        private string _queueDirectory;
-        private string _printedDirectory;
+        public string QueueDirectory { get; set; }
+        public string PrintedDirectory { get; set; }
 
-        public PrintQueue(string filesDirectory, string queueDirectory, string printedDirectory)
+        public PrintQueue(string queueDirectory, string printedDirectory)
         {
-            _filesDirectory = filesDirectory;
-            _queueDirectory = queueDirectory;
-            _printedDirectory = printedDirectory;
+            QueueDirectory = queueDirectory;
+            PrintedDirectory = printedDirectory;
         }
 
         public bool IsEmpty()
         {
-            return !Directory.GetFiles(_queueDirectory).Any();
+            return !Directory.GetFiles(QueueDirectory).Any();
         }
 
         public string GetNextFile()
         {
-            return Directory.GetFiles(_queueDirectory)[0];
+            return Directory.GetFiles(QueueDirectory)[0];
         }
 
         public void CutFileFromQueueToPrinted(string filePath)
@@ -34,15 +34,20 @@ namespace PrintApp.Logic
 
         public string GetAfterPrintedPath(string filePath)
         {
-            return Path.Combine(_printedDirectory, Path.GetFileName(filePath));
+            return Path.Combine(PrintedDirectory, Path.GetFileName(filePath));
         }
 
-        public void PostFile(Stream httpFileStream, string fileName)
+        public IEnumerable<string> GetQueueFiles()
         {
-            using (var fileStream = File.Create(Path.Combine(_queueDirectory, fileName)))
+            return Directory.GetFiles(QueueDirectory).Select((filePath) => Path.GetFileName(filePath));
+        }
+
+        public async Task AddFile(Stream httpFileStream, string fileName)
+        {
+            using (var fileStream = File.Create(Path.Combine(QueueDirectory, fileName)))
             {
-                httpFileStream.Seek(0, SeekOrigin.Begin);
-                httpFileStream.CopyTo(fileStream);
+                // httpFileStream.Seek(0, SeekOrigin.Begin);
+                await httpFileStream.CopyToAsync(fileStream);
             }
         }
     }
