@@ -9,7 +9,7 @@ namespace PrintApp.Logic
     {
         public Dictionary<string, IPrinter> Printers;
 
-        public Dictionary<string, IPrintQueue> Queues;
+        public Dictionary<string, IPrintFileManager> Queues;
 
         public string CurrentPrinterName 
         { 
@@ -23,7 +23,7 @@ namespace PrintApp.Logic
 
         public IPrinter CurrentPrinter => Printers[CurrentPrinterName];
 
-        public IPrintQueue CurrentQueue => Queues[CurrentPrinterName];
+        public IPrintFileManager CurrentQueue => Queues[CurrentPrinterName];
 
         public event EventHandler PrinterStateHasChanged;
 
@@ -32,7 +32,7 @@ namespace PrintApp.Logic
         public PrintersManager()
         {
             Printers = new Dictionary<string, IPrinter>();
-            Queues = new Dictionary<string, IPrintQueue>();
+            Queues = new Dictionary<string, IPrintFileManager>();
         }
 
         public bool TryAddPrinter(PrinterConnectionSettings settings)
@@ -40,13 +40,13 @@ namespace PrintApp.Logic
             if (Printers.ContainsKey(settings.PrinterName))
                 return false;
 
-            Printer printer = new Printer(settings);
+            MarlinPrinter printer = new MarlinPrinter(settings);
             if(!printer.TryConnect())
                 return false;
 
             Printers.Add(settings.PrinterName, printer);
             CurrentPrinterName = settings.PrinterName;
-            InitializeQueue(settings.PrinterName);
+            InitializeQueue(settings.PrinterName, printer);
             return true;
         }
 
@@ -54,12 +54,11 @@ namespace PrintApp.Logic
         /// Creates the printer folders (configs, queue, printed...) if they don't already exist.
         /// Adds them to the printer's queue.
         /// </summary>
-        private void InitializeQueue(string printerName)
+        private void InitializeQueue(string printerName, MarlinPrinter printer)
         {
-            PrintQueue queue = new PrintQueue($"{printerName}\\queue_files", $"{printerName}\\printed_files");
-            Queues.Add(printerName, queue);
-            Directory.CreateDirectory(queue.PrintedDirectory);
-            Directory.CreateDirectory(queue.QueueDirectory);
+            // Initialization of marlin queue:
+            MarlinPrintFileManager printFileManager = new MarlinPrintFileManager(printer);
+            Queues.Add(printerName, printFileManager);
         }
     }
 }

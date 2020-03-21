@@ -1,6 +1,7 @@
 ﻿@page "/connect"
 @using PrintApp.Logic
 @using WebApp.Core
+@using System.Threading
 @inject PrintersManager PrintersManager
 @inject NavigationManager NavigationManager
 
@@ -52,6 +53,7 @@
         else
         {
             _disableSubmit = false;
+            Thread.Sleep(5000);
             NavigationManager.NavigateTo("Control");
         }
     }

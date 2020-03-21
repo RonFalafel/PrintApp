@@ -4,7 +4,7 @@
 <div class="start-print">
     <h2>Start Print</h2>
     <select class="queue-files" size="99999" @bind="@selectedFile">
-        @foreach (string fileName in PrintersManager.CurrentQueue.GetQueueFiles())
+        @foreach (string fileName in PrintersManager.CurrentQueue.GetPrintFiles())
         {
             <option>
                 @fileName
@@ -22,6 +22,11 @@
 
     private string error;
 
+    protected override void OnInitialized()
+    {
+        PrintersManager.CurrentPrinter.WriteGCodeCommand("M20");
+    }
+
     private void DispatchPrint()
     {
         if (string.IsNullOrWhiteSpace(selectedFile))
@@ -30,7 +35,7 @@
         }
         else
         {
-            PrintersManager.CurrentPrinter.StartPrint($"{PrintersManager.CurrentQueue.QueueDirectory}//{selectedFile}");
+            PrintersManager.CurrentPrinter.StartPrint(selectedFile);
             error = string.Empty;
         }
     }
