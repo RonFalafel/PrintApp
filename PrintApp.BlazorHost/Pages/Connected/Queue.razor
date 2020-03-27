@@ -1,5 +1,6 @@
 ﻿@page "/Queue"
 @using PrintApp.Logic
+@using WebApp.Core
 @inject PrintersManager PrintersManager
 
 <h1>Queue Page</h1>
@@ -11,7 +12,7 @@
     @status
 </div>
 
-<h6>Currently in queue: @string.Join(", ", PrintersManager.CurrentQueue.GetPrintFiles()).</h6>
+<h6>Currently in queue: @string.Join(", ", PrintersManager.CurrentPrinter.State.GCodes).</h6>
 
 @code {
     const string DefaultStatus = "Drop a text file here to view it, or click to choose a file";
@@ -35,7 +36,18 @@
         else
         {
             status = "Loading...";
-            await PrintersManager.CurrentQueue.AddFile(file.Data, file.Name);
+            using (StreamReader binaryReader = new StreamReader(file.Data))
+            {
+                List<string> fileLines = new List<string>();
+                string line;
+                while ((line = await binaryReader.ReadLineAsync()) != null)
+                {
+                    fileLines.Add(line);
+                }
+
+                PrintersManager.CurrentQueue.UploadGCode(new GCodeFile(file.Name, fileLines));
+            }
+
             status = DefaultStatus;
         }
     }

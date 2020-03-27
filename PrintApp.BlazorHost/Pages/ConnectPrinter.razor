@@ -43,18 +43,14 @@
 
     private void HandleValidSubmit()
     {
-        _disableSubmit = true;
-        if (!PrintersManager.TryAddPrinter(_connectionSettings))
+        try
+        {
+            PrintersManager.AddPrinter(_connectionSettings);
+            NavigationManager.NavigateTo("Control");
+        }
+        catch (Exception e) // todo: catch specific exception and write fitting logs
         {
             error = "Could not connect to 3d printer.";
-            _disableSubmit = false;
-
-        }
-        else
-        {
-            _disableSubmit = false;
-            Thread.Sleep(5000);
-            NavigationManager.NavigateTo("Control");
         }
     }
 }

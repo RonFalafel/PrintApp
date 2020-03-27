@@ -4,7 +4,7 @@
 <div class="terminal">
     <h2>Terminal</h2>
     <ul class="command-history" id="scroller">
-        @foreach (string command in PrintersManager.CurrentPrinter.CommandHistory.ToList())
+        @foreach (string command in PrintersManager.CurrentPrinter.State.CommandHistory.ToList())
         {
             <li>
                 @command
@@ -23,35 +23,19 @@
 
     protected override void OnInitialized()
     {
-        PrintersManager.CurrentPrinter.PreDispatchCommandEvent = (string command) =>
-        {
-            InvokeAsync(() =>
-            {
-                StateHasChanged();
-            });
-        };
-
-        PrintersManager.CurrentPrinter.PostReadEvent = (string command) =>
-        {
-            InvokeAsync(() =>
-            {
-                StateHasChanged();
-            });
-        };
-
         PrintersManager.PrinterStateHasChanged += UpdateTerminal;
     }
 
     private void UpdateTerminal(object sender, EventArgs e)
     {
-        InvokeAsync(() => { StateHasChanged(); });
+        InvokeAsync(StateHasChanged);
     }
 
     private void SendCommand()
     {
         if (!string.IsNullOrWhiteSpace(_command))
         {
-            PrintersManager.CurrentPrinter.WriteGCodeCommand(_command);
+            PrintersManager.CurrentPrinter.WriteCommand(_command);
             _command = "";
         }
     }
