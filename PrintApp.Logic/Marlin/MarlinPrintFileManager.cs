@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace PrintApp.Logic
+namespace PrintApp.Logic.Marlin
 {
     public class MarlinPrintFileManager : IPrintFileManager
     {

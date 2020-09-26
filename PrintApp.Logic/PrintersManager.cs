@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using PrintApp.Logic.Marlin;
+using PrintApp.Logic.Server;
+using PrintApp.Logic.Mock;
 using WebApp.Core;
 
 namespace PrintApp.Logic
@@ -40,25 +42,35 @@ namespace PrintApp.Logic
             if (Printers.ContainsKey(settings.PrinterName))
                 return false;
 
-            MarlinPrinter printer = new MarlinPrinter(settings);
-            if(!printer.TryConnect())
-                return false;
-
-            Printers.Add(settings.PrinterName, printer);
-            CurrentPrinterName = settings.PrinterName;
-            InitializeQueue(settings.PrinterName, printer);
-            return true;
-        }
-
-        /// <summary>
-        /// Creates the printer folders (configs, queue, printed...) if they don't already exist.
-        /// Adds them to the printer's queue.
-        /// </summary>
-        private void InitializeQueue(string printerName, MarlinPrinter printer)
-        {
-            // Initialization of marlin queue:
-            MarlinPrintFileManager printFileManager = new MarlinPrintFileManager(printer);
-            Queues.Add(printerName, printFileManager);
+            switch (settings.ConnectionType)
+            {
+                case ConnectionTypes.Marlin:
+                    var marlinPrinter = new MarlinPrinter(settings);
+                    if (!marlinPrinter.TryConnect()) return false;
+                    Printers.Add(settings.PrinterName, marlinPrinter);
+                    CurrentPrinterName = settings.PrinterName;
+                    var marlinPrintFileManager = new MarlinPrintFileManager(marlinPrinter);
+                    Queues.Add(settings.PrinterName, marlinPrintFileManager);
+                    return true;
+                case ConnectionTypes.Server:
+                    var serverPrinter = new ServerPrinter(settings);
+                    if (!serverPrinter.TryConnect()) return false;
+                    var serverPrintFileManager = new ServerPrintFileManager($@"{settings.PrinterName}\\ToPrint"); // TODO: Get path from config.
+                    Printers.Add(settings.PrinterName, serverPrinter);
+                    CurrentPrinterName = settings.PrinterName;
+                    Queues.Add(settings.PrinterName, serverPrintFileManager);
+                    return true;
+                case ConnectionTypes.Mock:
+                    var mockPrinter = new MockPrinter();
+                    if (!mockPrinter.TryConnect()) return false;
+                    var mockServerPrintFileManager = new ServerPrintFileManager($@"{settings.PrinterName}\\ToPrint"); // TODO: Get path from config.
+                    Printers.Add(settings.PrinterName, mockPrinter);
+                    CurrentPrinterName = settings.PrinterName;
+                    Queues.Add(settings.PrinterName, mockServerPrintFileManager);
+                    return true;
+                default:
+                    return false; // TODO: Write log that printer type is not supported.
+            }
         }
     }
 }

@@ -12,5 +12,8 @@ namespace WebApp.Core
 
         [Required]
         public int Baudrate { get; set; }
+
+        [Required]
+        public ConnectionTypes ConnectionType { get; set; } = ConnectionTypes.Marlin;
     }
 }

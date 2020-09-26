@@ -9,15 +9,28 @@
 
 <EditForm Model="@_connectionSettings" OnValidSubmit="HandleValidSubmit">
     <p>
-        <InputText id="name" @bind-Value="_connectionSettings.PrinterName" />
+        <h6> Printer Name </h6>
+        <InputText id="name" @bind-Value="_connectionSettings.PrinterName"/>
     </p>
 
     <p>
+        <h6> USB Port </h6>
         <InputText id="usb" @bind-Value="_connectionSettings.UsbPort" />
     </p>
 
     <p>
+        <h6> Baudrate </h6>
         <InputNumber id="baud" @bind-Value="_connectionSettings.Baudrate" />
+    </p>
+    
+    <p>
+        <h6> Connection Type (Advanced) </h6>
+        <InputSelect @bind-Value="_connectionSettings.ConnectionType">
+            @foreach (var value in Enum.GetValues(typeof(ConnectionTypes)))
+            {
+                <option>@value</option>
+            }
+        </InputSelect>
     </p>
 
     <input type="submit" disabled="@_disableSubmit" />
@@ -36,7 +49,8 @@
     {
         PrinterName = "3d Printer Name",
         UsbPort = "COM1",
-        Baudrate = 115200
+        Baudrate = 115200,
+        ConnectionType = ConnectionTypes.Marlin
     };
 
     private string error;
@@ -53,7 +67,7 @@
         else
         {
             _disableSubmit = false;
-            Thread.Sleep(5000);
+            Thread.Sleep(5000); // TODO: Find a cleaner solution.
             NavigationManager.NavigateTo("Control");
         }
     }

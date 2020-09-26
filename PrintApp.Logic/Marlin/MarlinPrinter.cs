@@ -6,7 +6,7 @@ using System.IO.Ports;
 using System.Threading.Tasks;
 using WebApp.Core;
 
-namespace PrintApp.Logic
+namespace PrintApp.Logic.Marlin
 {
     public class MarlinPrinter : IPrinter
     {

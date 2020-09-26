@@ -8,9 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using WebApp.Core;
 
-namespace PrintApp.Logic
+namespace PrintApp.Logic.Server
 {
-    public class Printer : IPrinter
+    /// <summary>
+    /// Manages the printer only via direct real-time GCODE commands.
+    /// </summary>
+    public class ServerPrinter : IPrinter
     {
         #region Public Properties
 
@@ -69,7 +72,7 @@ namespace PrintApp.Logic
 
         #region Ctor
 
-        public Printer(PrinterConnectionSettings connectionSettings, int connectionTimeout = 50000, Action<string> postPrintEvent = null, bool debug = false, bool log = true, bool progress = true, bool quit = false)
+        public ServerPrinter(PrinterConnectionSettings connectionSettings, int connectionTimeout = 50000, Action<string> postPrintEvent = null, bool debug = false, bool log = true, bool progress = true, bool quit = false)
         {
             PostPrintEvent = postPrintEvent;
             _connectionTimeout = connectionTimeout;
@@ -84,7 +87,7 @@ namespace PrintApp.Logic
             _commandHistory = new List<string>();
         }
 
-        public Printer(int connectionTimeout = 50000, Action<string> postPrintEvent = null, bool debug = false, bool log = true, bool progress = true, bool quit = false)
+        public ServerPrinter(int connectionTimeout = 50000, Action<string> postPrintEvent = null, bool debug = false, bool log = true, bool progress = true, bool quit = false)
         {
             PostPrintEvent = postPrintEvent;
             _connectionTimeout = connectionTimeout;
